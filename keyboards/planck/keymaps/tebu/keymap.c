@@ -9,6 +9,7 @@ enum planck_keycodes {
   RGB_SLD = EZ_SAFE_RANGE,
   MAC_LOCK,
   JP_TOG,
+  JP_CUSTOM_GRV,
 };
 
 
@@ -89,9 +90,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
   // SYMBOLS
   [_SYMBOLS] = LAYOUT_planck_grid(
-    KC_LBRC,        KC_RBRC,        KC_LPRN,        KC_RPRN, KC_QUOTE,  _______, _______, KC_SCLN,        KC_AMPR,        KC_ASTR,        KC_LPRN,        KC_PIPE,        
+    KC_LBRC,        KC_RBRC,        KC_LPRN,        KC_RPRN, KC_QUOTE,  _______, _______, KC_SCLN,        KC_AMPR,        KC_ASTR,        JP_CUSTOM_GRV,  KC_PIPE,        
     KC_DQUO,        KC_DOT,         KC_COMMA,       _______, KC_LCBR,   _______, _______, KC_RCBR,        KC_EXLM,        KC_AT,          KC_HASH,        KC_COLN,        
-    KC_LSFT,        KC_UNDS,        KC_MINUS,       KC_EQL,  KC_TILDE,  _______, _______, KC_QUES,        KC_DLR,         KC_PERC,        KC_CIRC,        KC_RSFT,
+    KC_LSFT,        KC_UNDS,        KC_MINUS,       KC_EQL,  KC_TILDE,  _______, _______, KC_QUES,        KC_DLR,         KC_PERC,        KC_CIRC,        JP_TILD,
     _______,        _______,        _______,        _______, _______,   _______, KC_NO,   _______,        _______,        _______,        _______,        _______
   ),
 
@@ -218,6 +219,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
           case KC_CIRC:  jp_code = JP_CIRC;  break;
           case KC_AMPR:  jp_code = JP_AMPR;  break;
           case KC_ASTR:  jp_code = JP_ASTR;  break;
+
+          case JP_CUSTOM_GRV: jp_code = JP_GRV;  break;
       }
 
       if (jp_code) {                     /* remap if matched */

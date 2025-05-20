@@ -10,6 +10,7 @@ enum planck_keycodes {
   MAC_LOCK,
   JP_TOG,
   JP_CUSTOM_GRV,
+  CUSTOM_LANG_SWITCH,
 };
 
 
@@ -41,7 +42,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     KC_Q,         KC_W,       KC_E,           KC_R,       KC_T,         KC_0,      JP_TOG,   KC_Y,        KC_U,              KC_I,           KC_O,           KC_P,
     KC_A,         KC_S,       LT(6,KC_D),     LT(7,KC_F), KC_G,         KC_1,      KC_4,     KC_H,        GUI_T(KC_J),       CTL_T(KC_K),    ALT_T(KC_L),    KC_SCLN,
     SFT_T(KC_Z),  KC_X,       KC_C,           KC_V,       KC_B,         KC_2,      KC_5,     KC_N,        KC_M,              KC_COMMA,       KC_DOT,         KC_RIGHT_SHIFT, 
-    KC_TAB,       TG(8),      ALT_T(KC_ESCAPE),THUMB0,    THUMB1,       TG(3),     KC_NO,    RAISE,       LT(2,KC_ENTER),    TG(5),          KC_CAPS,        TG(1)
+    KC_TAB,       TG(8),      ALT_T(KC_ESCAPE),THUMB0,    THUMB1,       TG(5),     KC_NO,    RAISE,       LT(2,KC_ENTER),    CUSTOM_LANG_SWITCH,KC_CAPS,        TG(1)
   ),
 
   [_BASE] = LAYOUT_planck_grid(
@@ -191,62 +192,89 @@ bool rgb_matrix_indicators_user(void) {
 static bool japanese_mode = false;
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-  /* --- language toggle key --- */
-  if (keycode == JP_TOG && record->event.pressed) {
-      japanese_mode = !japanese_mode;   /* flip EN/JP flag */
-      return false;                     /* eat the key */
-  }
+    // only do our remaps on key‐down
+    if (!record->event.pressed) return true;
 
-  /* --- dynamic JP remapping for _RAISE / _SYMBOLS --- */
-  if (japanese_mode && (layer_state_is(_RAISE) || layer_state_is(_SYMBOLS))) {
-      uint16_t jp_code = 0;
-      switch (keycode) {
-          case KC_UNDS:  jp_code = JP_UNDS;  break;
-          case KC_EQUAL: jp_code = JP_EQL;   break;
-          case KC_LBRC:  jp_code = JP_LBRC;  break;
-          case KC_RBRC:  jp_code = JP_RBRC;  break;
-          case KC_BSLS:  jp_code = JP_YEN;   break;
-          case KC_LCBR:  jp_code = JP_LCBR;  break;
-          case KC_RCBR:  jp_code = JP_RCBR;  break;
-          case KC_LPRN:  jp_code = JP_LPRN;  break;
-          case KC_RPRN:  jp_code = JP_RPRN;  break;
-          case KC_SCLN:  jp_code = JP_SCLN;  break;
-          case KC_COLN:  jp_code = JP_COLN;  break;
-          case KC_QUOT:  jp_code = JP_QUOT;  break;
-          case KC_DQUO:  jp_code = JP_DQUO;  break;
-
-          case KC_AT:    jp_code = JP_AT;  break;
-          case KC_CIRC:  jp_code = JP_CIRC;  break;
-          case KC_AMPR:  jp_code = JP_AMPR;  break;
-          case KC_ASTR:  jp_code = JP_ASTR;  break;
-
-          case JP_CUSTOM_GRV: jp_code = JP_GRV;  break;
-      }
-
-      if (jp_code) {                     /* remap if matched */
-          if (record->event.pressed) {
-              register_code16(jp_code);
-          } else {
-              unregister_code16(jp_code);
-          }
-          return false;                  /* stop further handling */
-      }
-  }
-
-  switch (keycode) {
-    case MAC_LOCK:
-      HCS(0x19E);
-
-    case RGB_SLD:
-        if (rawhid_state.rgb_control) {
-            return false;
-        }
-        if (record->event.pressed) {
-            rgblight_mode(1);
-        }
+    // 1) EN/JP toggle
+    if (keycode == JP_TOG) {
+        japanese_mode = !japanese_mode;
         return false;
-  }
-  return true;
+    }
+
+    if (keycode == CUSTOM_LANG_SWITCH) {
+        uint16_t kc_code = 0;
+        if (japanese_mode) kc_code = JP_ZKHK;
+        else kc_code = C(KC_SPACE);
+
+        register_code16(kc_code);
+        unregister_code16(kc_code);
+        return false;
+    }
+
+    // 2) Dynamic JP remapping on RAISE or SYMBOLS layers
+    if (japanese_mode && (layer_state_is(_RAISE) || layer_state_is(_SYMBOLS))) {
+        // grab mods once
+        uint8_t mods = get_mods();
+
+        // figure out which JP code to send
+        uint16_t jp_code = 0;
+        switch (keycode) {
+            // unshifted keys → direct JP equivalents
+            case KC_UNDS:   jp_code = JP_UNDS;   break;
+            case KC_LBRC:   jp_code = JP_LBRC;   break;
+            case KC_RBRC:   jp_code = JP_RBRC;   break;
+            case KC_BSLS:   jp_code = JP_YEN;    break;
+            case KC_LCBR:   jp_code = JP_LCBR;   break;
+            case KC_RCBR:   jp_code = JP_RCBR;   break;
+            case KC_LPRN:   jp_code = JP_LPRN;   break;
+            case KC_RPRN:   jp_code = JP_RPRN;   break;
+            case KC_COLN:   jp_code = JP_COLN;   break;
+            case KC_DQUO:   jp_code = JP_DQUO;   break;
+            case KC_PIPE:   jp_code = JP_PIPE;   break;
+            case KC_AT:     jp_code = JP_AT;     break;
+            case KC_CIRC:   jp_code = JP_CIRC;   break;
+            case KC_AMPR:   jp_code = JP_AMPR;   break;
+            case KC_ASTR:   jp_code = JP_ASTR;   break;
+            case JP_CUSTOM_GRV: jp_code = JP_GRV; break;
+
+            // the one key that needs shift‐awareness:
+            case KC_GRV:  if (mods & MOD_MASK_SHIFT) jp_code = S(JP_CIRC); else jp_code = JP_GRV; break;
+            case KC_EQL:  if (mods & MOD_MASK_SHIFT) jp_code = JP_PLUS; else jp_code = JP_EQL; break;
+            case KC_QUOT: if (mods & MOD_MASK_SHIFT) jp_code = JP_DQUO; else jp_code = JP_QUOT; break;
+            case KC_7:    if (mods & MOD_MASK_SHIFT) jp_code = JP_AMPR; else jp_code = JP_7; break;
+            case KC_8:    if (mods & MOD_MASK_SHIFT) jp_code = JP_ASTR; else jp_code = JP_8; break;
+            case KC_9:    if (mods & MOD_MASK_SHIFT) jp_code = JP_LPRN; else jp_code = JP_9; break;
+            case KC_0:    if (mods & MOD_MASK_SHIFT) jp_code = JP_RPRN; else jp_code = JP_0; break;
+            case KC_MINS: if (mods & MOD_MASK_SHIFT) jp_code = JP_UNDS; else jp_code = JP_MINS; break;
+
+            case KC_SCLN: if (mods & MOD_MASK_SHIFT) { jp_code = JP_COLN; del_mods(MOD_MASK_SHIFT); } else jp_code = JP_SCLN; break;
+            case KC_2:    if (mods & MOD_MASK_SHIFT) { jp_code = JP_AT; del_mods(MOD_MASK_SHIFT); }   else jp_code = JP_2; break;
+            case KC_6:    if (mods & MOD_MASK_SHIFT) { jp_code = JP_CIRC; del_mods(MOD_MASK_SHIFT); } else jp_code = JP_6; break;
+
+            default: return true;
+        }
+
+        register_code16(jp_code); // send the key
+        unregister_code16(jp_code); // eat the key
+
+        set_mods(mods);
+        return false;
+    }
+
+    // 3) rest of your custom keycodes
+    switch (keycode) {
+        case MAC_LOCK:
+            HCS(0x19E);
+            return false;
+        case RGB_SLD:
+            if (!rawhid_state.rgb_control) {
+                rgblight_mode(1);
+            }
+            return false;
+    }
+
+    // fall back to default processing
+    return true;
 }
 
 #ifdef AUDIO_ENABLE

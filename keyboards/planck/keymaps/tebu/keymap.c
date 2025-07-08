@@ -108,7 +108,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 };
 
 
-const uint16_t PROGMEM tab_combo[] = {KC_F, LT(7,KC_T), COMBO_END};
+const uint16_t PROGMEM tab_combo[] = {THUMB0, THUMB1, COMBO_END};
 const uint16_t PROGMEM left_tab_combo[] = {KC_C, THUMB0, COMBO_END};
 const uint16_t PROGMEM right_tab_combo[] = {KC_D, THUMB0, COMBO_END};
 const uint16_t PROGMEM left_workspace_combo[] = {LT(6,KC_S), MT(MOD_LALT,KC_D), THUMB0, COMBO_END};

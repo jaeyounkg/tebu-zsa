@@ -39,10 +39,10 @@ enum planck_layers {
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [_LAYER0] = LAYOUT_planck_grid(
-    KC_Q,         KC_W,       KC_E,           KC_R,       KC_T,         KC_0,      JP_TOG,   KC_Y,        KC_U,              KC_I,           KC_O,           KC_P,
+    KC_Q,         KC_W,       KC_E,           KC_R,       KC_T,         KC_0,      KC_3,     KC_Y,        KC_U,              KC_I,           KC_O,           KC_P,
     KC_A,         KC_S,       LT(6,KC_D),     LT(7,KC_F), KC_G,         KC_1,      KC_4,     KC_H,        GUI_T(KC_J),       CTL_T(KC_K),    ALT_T(KC_L),    KC_SCLN,
-    SFT_T(KC_Z),  KC_X,       KC_C,           KC_V,       KC_B,         KC_2,      KC_5,     KC_N,        KC_M,              KC_COMMA,       KC_DOT,         KC_RIGHT_SHIFT, 
-    KC_TAB,       TG(8),      ALT_T(KC_ESCAPE),THUMB0,    THUMB1,       TG(5),     KC_NO,    RAISE,       LT(2,KC_ENTER),    CUSTOM_LANG_SWITCH,KC_CAPS,        TG(1)
+    SFT_T(KC_Z),  KC_X,       KC_C,           KC_V,       KC_B,         KC_2,      JP_TOG,   KC_N,        KC_M,              KC_COMMA,       KC_DOT,         KC_RIGHT_SHIFT, 
+    TG(8),        KC_ESC,     ALT_T(KC_TAB),THUMB0,    THUMB1,       TG(5),     KC_NO,    RAISE,       LT(2,KC_ENTER),    CUSTOM_LANG_SWITCH,KC_CAPS,        TG(1)
   ),
 
   [_BASE] = LAYOUT_planck_grid(
@@ -102,7 +102,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     KC_F1,          TD(DANCE_0),    TD(DANCE_1),    KC_F4,          KC_F5,          KC_F6,          KC_F7,          KC_F8,          KC_F9,          KC_F10,         KC_F11,         KC_F12,         
     KC_1,           KC_2,           KC_3,           KC_4,           KC_5,           _______,        _______,        _______,        KC_LEFT,        KC_DOWN,        KC_UP,          KC_RIGHT,       
     SFT_T(KC_6),    ALT_T(KC_7),    KC_8,           KC_9,           KC_0,           _______,        _______,        _______,        KC_HOME,        KC_PGDN,        KC_PGUP,        KC_END,         
-    _______,        _______,        KC_ESCAPE,      THUMB0,         THUMB1,         _______,        KC_NO,          _______,        _______,        _______,        _______,        _______         
+    _______,        _______,        _______,        THUMB0,         THUMB1,         _______,        KC_NO,          _______,        _______,        _______,        _______,        _______         
   ),
 
 };

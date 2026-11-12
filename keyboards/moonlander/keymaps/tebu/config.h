@@ -20,7 +20,7 @@
 #undef MOUSEKEY_WHEEL_TIME_TO_MAX
 #define MOUSEKEY_WHEEL_TIME_TO_MAX 30
 
-#define CAPS_LOCK_STATUS
+#define MOONLANDER_USER_LEDS  // status LEDs are driven from keymap.c
 #define LAYER_STATE_16BIT
 
 #define RGB_MATRIX_STARTUP_SPD 60

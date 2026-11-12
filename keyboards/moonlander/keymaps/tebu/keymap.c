@@ -6,6 +6,8 @@
 
 enum custom_keycodes {
   RGB_SLD = ZSA_SAFE_RANGE,
+  JA_SW,   // toggle: when on, LG_SPC sends Alt+` (Windows IME switch) instead of Gui+Space
+  LG_SPC,  // Gui+Space, or Alt+` while JA_SW is on
 };
 
 enum layers { Base, Qwerty, Raise, Lower, Arrows, Mouse, Symbols, WithMous };
@@ -30,7 +32,6 @@ enum layers { Base, Qwerty, Raise, Lower, Arrows, Mouse, Symbols, WithMous };
 #define SFT_Z   LSFT_T(KC_Z)
 #define ARR_D   LT(Arrows, KC_D)
 #define SYM_F   LT(Symbols, KC_F)
-#define LG_SPC  LGUI(KC_SPC)   // plain Gui+Space, not tap-hold
 #define LED_LVL LED_LEVEL
 
 // The halves are used swapped: the board's right half sits on the left of the desk.
@@ -55,7 +56,7 @@ enum layers { Base, Qwerty, Raise, Lower, Arrows, Mouse, Symbols, WithMous };
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [Base] = LAYOUT_swapped(
     _______, KC_Q,    KC_Z,    KC_F,    KC_P,    KC_V,    _______,          _______,  KC_J,      KC_L,    KC_U,    KC_Y,    KC_X,    _______,
-    _______, KC_A,    KC_R,    ARR_S,   SYM_T,   KC_G,    TG(Qwerty),       _______,  KC_K,      GUI_N,   CTL_E,   KC_I,    KC_O,    _______,
+    _______, KC_A,    KC_R,    ARR_S,   SYM_T,   KC_G,    TG(Qwerty),       JA_SW,    KC_K,      GUI_N,   CTL_E,   KC_I,    KC_O,    _______,
              KC_LSFT, ALT_W,   ALT_C,   KC_D,    KC_B,    TG(WithMous),     _______,  KC_M,      KC_H,    ALT_CMA, KC_DOT,  KC_RSFT,
              _______, KC_ESC,  ALT_TAB, GUI_BSP, CTL_SPC, TO(Mouse),        _______,  MO(Raise), LWR_ENT, LG_SPC,  KC_CAPS, _______,
     _______, _______, _______,                                                                                     _______, _______, _______
@@ -111,8 +112,63 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   ),
 };
 
+static bool     ja_sw = false;
+static uint16_t lg_spc_sent = KC_NO;  // what LG_SPC registered on press, so release matches even if toggled meanwhile
+
+extern bool is_launching;  // moonlander.c: true while the startup LED animation runs
+
+// Status LEDs (board halves, not desk halves):
+//   board right half, LEDs 4-6: highest active layer in binary, LED 4 = bit 0
+//   board left half:  LED 1 = JA_SW on, LED 2 unused, LED 3 = Caps Lock
+// `state` is passed in because layer_state_set_user runs before layer_state is updated.
+static void update_status_leds(layer_state_t state) {
+  if (is_launching) return;
+  bool    on    = keyboard_config.led_level;
+  uint8_t layer = get_highest_layer(state);
+  STATUS_LED_1(on && ja_sw);
+  STATUS_LED_2(false);
+  STATUS_LED_3(on && host_keyboard_led_state().caps_lock);
+  STATUS_LED_4(on && (layer & 1));
+  STATUS_LED_5(on && (layer & 2));
+  STATUS_LED_6(on && (layer & 4));
+}
+
+layer_state_t layer_state_set_user(layer_state_t state) {
+  update_status_leds(state);
+  return state;
+}
+
+bool led_update_user(led_t led_state) {
+  update_status_leds(layer_state);
+  return true;
+}
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
+  case JA_SW:
+    if (record->event.pressed) {
+      ja_sw = !ja_sw;
+      update_status_leds(layer_state);
+    }
+    return false;
+
+  case LED_LEVEL:  // normally handled by moonlander.c, but MOONLANDER_USER_LEDS disables that
+    if (record->event.pressed) {
+      keyboard_config.led_level ^= 1;
+      eeconfig_update_kb(keyboard_config.raw);
+      update_status_leds(layer_state);
+    }
+    return false;
+
+  case LG_SPC:
+    if (record->event.pressed) {
+      lg_spc_sent = ja_sw ? LALT(KC_GRV) : LGUI(KC_SPC);
+      register_code16(lg_spc_sent);
+    } else {
+      unregister_code16(lg_spc_sent);
+    }
+    return false;
+
   case QK_MODS ... QK_MODS_MAX:
     // Mouse and consumer keys (volume, media) with modifiers work inconsistently across operating systems,
     // this makes sure that modifiers are always applied to the key that was pressed.

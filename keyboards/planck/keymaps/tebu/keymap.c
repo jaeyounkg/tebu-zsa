@@ -1,13 +1,11 @@
 #include QMK_KEYBOARD_H
-#include "keymap_japanese.h"
 #include "eeprom.h"
 
 enum custom_keycodes {
   RGB_SLD = EZ_SAFE_RANGE,
   MAC_LCK,  // macOS lock screen
-  JP_TOG,   // toggle Japanese mode: symbols are sent for a JIS layout, LANG_SW sends Zenkaku/Hankaku
-  JA_GRV,   // backtick (also remapped for JIS in Japanese mode)
-  LANG_SW,  // Ctrl+Space, or Zenkaku/Hankaku in Japanese mode
+  JA_SW,    // toggle: when on, LG_SPC sends Alt+` (Windows IME switch) instead of Gui+Space
+  LG_SPC,   // Gui+Space, or Alt+` while JA_SW is on
 };
 
 enum layers { Base, Qwerty, Lower, Raise, Adjust, Mouse, Arrows, Symbols, WithMous };
@@ -17,20 +15,21 @@ enum tap_dances { TD_GRV, TD_TAB };
 // Tap-hold keys: hold for modifier/layer, tap for the key
 #define GUI_BSP GUI_T(KC_BSPC)
 #define CTL_SPC CTL_T(KC_SPC)
-#define ALT_ESC ALT_T(KC_ESC)
+#define ALT_C   ALT_T(KC_C)
+#define ALT_COM ALT_T(KC_COMM)
 #define LWR_ENT LT(Lower, KC_ENT)
 #define ARR_S   LT(Arrows, KC_S)
 #define SYM_T   LT(Symbols, KC_T)
 #define GUI_N   GUI_T(KC_N)
 #define CTL_E   CTL_T(KC_E)
-#define ALT_I   ALT_T(KC_I)
+#define ALT_W   ALT_T(KC_W)
 // same keys on the Qwerty layer
 #define SFT_Z   SFT_T(KC_Z)
 #define ARR_D   LT(Arrows, KC_D)
 #define SYM_F   LT(Symbols, KC_F)
 #define GUI_J   GUI_T(KC_J)
 #define CTL_K   CTL_T(KC_K)
-#define ALT_L   ALT_T(KC_L)
+#define ALT_X   ALT_T(KC_X)
 // WithMous layer
 #define SFT_6   SFT_T(KC_6)
 #define ALT_7   ALT_T(KC_7)
@@ -50,16 +49,16 @@ enum tap_dances { TD_GRV, TD_TAB };
 // The bottom-row gap (XXXXXXX) is the second half of the 2u key.
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [Base] = LAYOUT_planck_grid(
-    KC_Q,    KC_Z,    KC_F,    KC_P,    KC_V,      KC_0,    JP_TOG,    KC_J,    KC_L,    KC_U,    KC_Y,    KC_X,
-    KC_A,    KC_R,    ARR_S,   SYM_T,   KC_G,      KC_1,    KC_4,      KC_K,    GUI_N,   CTL_E,   ALT_I,   KC_O,
-    KC_LSFT, KC_W,    KC_C,    KC_D,    KC_B,      KC_2,    KC_5,      KC_M,    KC_H,    KC_COMM, KC_DOT,  KC_RSFT,
-    KC_TAB,  TG_WMOU, ALT_ESC, GUI_BSP, CTL_SPC,   TG_MOUS, XXXXXXX,   RAISE,   LWR_ENT, LANG_SW, KC_CAPS, TG_QWRT
+    KC_Q,    KC_Z,    KC_F,    KC_P,    KC_V,      _______, _______,   KC_J,    KC_L,    KC_U,    KC_Y,    KC_X,
+    KC_A,    KC_R,    ARR_S,   SYM_T,   KC_G,      _______, JA_SW,     KC_K,    GUI_N,   CTL_E,   KC_I,    KC_O,
+    KC_LSFT, ALT_W,   ALT_C,   KC_D,    KC_B,      _______, _______,   KC_M,    KC_H,    ALT_COM, KC_DOT,  KC_RSFT,
+    TG_WMOU, KC_ESC,  KC_TAB,  GUI_BSP, CTL_SPC,   TG_MOUS, XXXXXXX,   RAISE,   LWR_ENT, LG_SPC,  KC_CAPS, TG_QWRT
   ),
   [Qwerty] = LAYOUT_planck_grid(
-    KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,      KC_0,    JP_TOG,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,
-    KC_A,    KC_S,    ARR_D,   SYM_F,   KC_G,      KC_1,    KC_4,      KC_H,    GUI_J,   CTL_K,   ALT_L,   KC_SCLN,
-    SFT_Z,   KC_X,    KC_C,    KC_V,    KC_B,      KC_2,    KC_5,      KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_RSFT,
-    KC_TAB,  TG_WMOU, ALT_ESC, GUI_BSP, CTL_SPC,   TG_MOUS, XXXXXXX,   RAISE,   LWR_ENT, LANG_SW, KC_CAPS, TG_QWRT
+    KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,      _______, _______,   KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,
+    KC_A,    KC_S,    ARR_D,   SYM_F,   KC_G,      _______, JA_SW,     KC_H,    GUI_J,   CTL_K,   KC_L,    KC_SCLN,
+    SFT_Z,   ALT_X,   ALT_C,   KC_V,    KC_B,      _______, _______,   KC_N,    KC_M,    ALT_COM, KC_DOT,  KC_RSFT,
+    TG_WMOU, KC_ESC,  KC_TAB,  GUI_BSP, CTL_SPC,   TG_MOUS, XXXXXXX,   RAISE,   LWR_ENT, LG_SPC,  KC_CAPS, TG_QWRT
   ),
   [Lower] = LAYOUT_planck_grid(
     KC_SCRL, KC_INS,  KC_F11,  KC_F12,  KC_PSCR,   _______, _______,   _______, _______, _______, _______, KC_PAUS,
@@ -68,9 +67,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     _______, _______, _______, KC_DEL,  _______,   _______, XXXXXXX,   _______, _______, _______, _______, _______
   ),
   [Raise] = LAYOUT_planck_grid(
-    KC_LBRC, KC_RBRC, KC_LPRN, KC_RPRN, KC_DQUO,   KC_INT3, _______,   KC_SCLN, KC_7,    KC_8,    KC_9,    KC_BSLS,
-    KC_QUOT, KC_DOT,  KC_COMM, KC_0,    KC_LCBR,   KC_EQL,  _______,   KC_RCBR, KC_1,    KC_2,    KC_3,    KC_COLN,
-    KC_LSFT, KC_UNDS, KC_MINS, KC_EQL,  KC_GRV,    KC_INT1, _______,   KC_SLSH, KC_4,    KC_5,    KC_6,    KC_RSFT,
+    KC_LBRC, KC_RBRC, KC_LPRN, KC_RPRN, KC_DQUO,   _______, _______,   KC_SCLN, KC_7,    KC_8,    KC_9,    KC_BSLS,
+    KC_QUOT, KC_DOT,  KC_COMM, KC_0,    KC_LCBR,   _______, _______,   KC_RCBR, KC_1,    KC_2,    KC_3,    KC_COLN,
+    KC_LSFT, KC_UNDS, KC_MINS, KC_EQL,  KC_GRV,    _______, _______,   KC_SLSH, KC_4,    KC_5,    KC_6,    KC_RSFT,
     _______, _______, KC_TAB,  _______, _______,   _______, XXXXXXX,   _______, _______, KC_0,    _______, TO_BASE
   ),
   // Adjust: on while Lower + Raise are both held
@@ -88,26 +87,26 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   ),
   [Arrows] = LAYOUT_planck_grid(
     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   _______, _______,   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_PAUS,
-    KC_LGUI, KC_LALT, _______, KC_LSFT, XXXXXXX,   _______, _______,   XXXXXXX, KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT,
-    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   _______, _______,   XXXXXXX, KC_HOME, KC_PGDN, KC_PGUP, KC_END,
+    KC_LGUI, KC_LALT, _______, KC_LSFT, XXXXXXX,   _______, _______,   XXXXXXX, KC_LEFT, KC_UP,   KC_DOWN, KC_RGHT,
+    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   _______, _______,   XXXXXXX, KC_HOME, KC_PGUP, KC_PGDN, KC_END,
     TO_QWRT, _______, KC_LALT, KC_LGUI, KC_LCTL,   _______, XXXXXXX,   _______, _______, _______, _______, TO_BASE
   ),
   [Symbols] = LAYOUT_planck_grid(
-    KC_LBRC, KC_RBRC, KC_LPRN, KC_RPRN, KC_QUOT,   _______, _______,   KC_SCLN, KC_AMPR, KC_ASTR, JA_GRV,  KC_PIPE,
-    KC_DQUO, KC_DOT,  KC_COMM, _______, KC_LCBR,   _______, _______,   KC_RCBR, KC_EXLM, KC_AT,   KC_HASH, KC_COLN,
-    KC_LSFT, KC_UNDS, KC_MINS, KC_EQL,  KC_TILD,   _______, _______,   KC_QUES, KC_DLR,  KC_PERC, KC_CIRC, JP_TILD,
+    KC_LBRC, KC_RBRC, KC_LPRN, KC_RPRN, KC_DQUO,   _______, _______,   KC_SCLN, KC_AMPR, KC_ASTR, KC_GRV,  KC_PIPE,
+    KC_QUOT, KC_DOT,  KC_COMM, _______, KC_LCBR,   _______, _______,   KC_RCBR, KC_EXLM, KC_AT,   KC_HASH, KC_COLN,
+    KC_LSFT, KC_UNDS, KC_MINS, KC_EQL,  KC_TILD,   _______, _______,   KC_QUES, KC_DLR,  KC_PERC, KC_CIRC, KC_PLUS,
     _______, _______, _______, _______, _______,   _______, XXXXXXX,   _______, _______, _______, _______, _______
   ),
   [WithMous] = LAYOUT_planck_grid(
     KC_F1,   GRV_F2,  TAB_F3,  KC_F4,   KC_F5,     KC_F6,   KC_F7,     KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,
-    KC_1,    KC_2,    KC_3,    KC_4,    KC_5,      _______, _______,   _______, KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT,
-    SFT_6,   ALT_7,   KC_8,    KC_9,    KC_0,      _______, _______,   _______, KC_HOME, KC_PGDN, KC_PGUP, KC_END,
+    KC_1,    KC_2,    KC_3,    KC_4,    KC_5,      _______, _______,   _______, KC_LEFT, KC_UP,   KC_DOWN, KC_RGHT,
+    SFT_6,   ALT_7,   KC_8,    KC_9,    KC_0,      _______, _______,   _______, KC_HOME, KC_PGUP, KC_PGDN, KC_END,
     _______, _______, KC_ESC,  GUI_BSP, CTL_SPC,   _______, XXXXXXX,   _______, _______, _______, _______, _______
   ),
 };
 
 const uint16_t PROGMEM tab_combo[]             = {GUI_BSP, CTL_SPC, COMBO_END};
-const uint16_t PROGMEM left_tab_combo[]        = {KC_C, GUI_BSP, COMBO_END};
+const uint16_t PROGMEM left_tab_combo[]        = {ALT_C, GUI_BSP, COMBO_END};
 const uint16_t PROGMEM right_tab_combo[]       = {KC_D, GUI_BSP, COMBO_END};
 // note: no key is ALT_T(KC_D), so the two workspace combos can't currently fire
 const uint16_t PROGMEM left_workspace_combo[]  = {ARR_S, ALT_T(KC_D), GUI_BSP, COMBO_END};
@@ -184,75 +183,28 @@ bool rgb_matrix_indicators_user(void) {
   return true;
 }
 
-static bool japanese_mode = false;
-
-// In Japanese mode, keys on Raise/Symbols are re-sent as their JIS equivalents.
-// Returns the JIS keycode to tap, or KC_NO to leave the key alone.
-// `shift` is whether Shift is held; `drop_shift` is set when the JIS key must be sent without it.
-static uint16_t jis_keycode(uint16_t keycode, bool shift, bool *drop_shift) {
-  switch (keycode) {
-  case KC_UNDS: return JP_UNDS;
-  case KC_LBRC: return JP_LBRC;
-  case KC_RBRC: return JP_RBRC;
-  case KC_BSLS: return JP_YEN;
-  case KC_LCBR: return JP_LCBR;
-  case KC_RCBR: return JP_RCBR;
-  case KC_LPRN: return JP_LPRN;
-  case KC_RPRN: return JP_RPRN;
-  case KC_COLN: return JP_COLN;
-  case KC_DQUO: return JP_DQUO;
-  case KC_PIPE: return JP_PIPE;
-  case KC_AT:   return JP_AT;
-  case KC_CIRC: return JP_CIRC;
-  case KC_AMPR: return JP_AMPR;
-  case KC_ASTR: return JP_ASTR;
-  case JA_GRV:  return JP_GRV;
-
-  case KC_GRV:  return shift ? S(JP_CIRC) : JP_GRV;
-  case KC_EQL:  return shift ? JP_PLUS : JP_EQL;
-  case KC_QUOT: return shift ? JP_DQUO : JP_QUOT;
-  case KC_7:    return shift ? JP_AMPR : JP_7;
-  case KC_8:    return shift ? JP_ASTR : JP_8;
-  case KC_9:    return shift ? JP_LPRN : JP_9;
-  case KC_0:    return shift ? JP_RPRN : JP_0;
-  case KC_MINS: return shift ? JP_UNDS : JP_MINS;
-
-  case KC_SCLN: *drop_shift = shift; return shift ? JP_COLN : JP_SCLN;
-  case KC_2:    *drop_shift = shift; return shift ? JP_AT   : JP_2;
-  case KC_6:    *drop_shift = shift; return shift ? JP_CIRC : JP_6;
-
-  default:      return KC_NO;
-  }
-}
+static bool     ja_sw       = false;
+static uint16_t lg_spc_sent = KC_NO;  // what LG_SPC registered on press, so release matches even if toggled meanwhile
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-  // all custom handling happens on key-down
+  if (keycode == LG_SPC) {
+    if (record->event.pressed) {
+      lg_spc_sent = ja_sw ? A(KC_GRV) : G(KC_SPC);
+      register_code16(lg_spc_sent);
+    } else {
+      unregister_code16(lg_spc_sent);
+    }
+    return false;
+  }
+
+  // all other custom handling happens on key-down
   if (!record->event.pressed) return true;
 
   switch (keycode) {
-  case JP_TOG:
-    japanese_mode = !japanese_mode;
+  case JA_SW:
+    ja_sw = !ja_sw;
     return false;
 
-  case LANG_SW:
-    tap_code16(japanese_mode ? JP_ZKHK : C(KC_SPC));
-    return false;
-  }
-
-  if (japanese_mode && (layer_state_is(Raise) || layer_state_is(Symbols))) {
-    uint8_t  mods       = get_mods();
-    bool     drop_shift = false;
-    uint16_t jis        = jis_keycode(keycode, mods & MOD_MASK_SHIFT, &drop_shift);
-    if (jis != KC_NO) {
-      if (drop_shift) del_mods(MOD_MASK_SHIFT);
-      tap_code16(jis);
-      set_mods(mods);
-      return false;
-    }
-    return true;
-  }
-
-  switch (keycode) {
   case MAC_LCK:
     host_consumer_send(0x19E);
     return false;
